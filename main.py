@@ -1,10 +1,19 @@
 import streamlit as st
+from transformers import pipeline
+
+@st.cache
+def load():
+    return pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
+
+bert = load()
 
 st.title("BERT Q&A App")
 
-input_text = st.text_area("Enter your question and passage:")
+question = st.text_input("Enter your question:")
+context = st.text_area("Enter your passage:")
 
 if st.button("Get Answer"):
     # Process input text and get answer using BERT model
-    answer = bert(input_text)
-    st.write("Answer:", answer)
+    input_dict = {"question": question, "context": context}
+    answer = bert(input_dict)
+    st.write("Answer:", answer['answer'])
