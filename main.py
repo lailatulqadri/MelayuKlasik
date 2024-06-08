@@ -7,11 +7,11 @@ import numpy as np
 
 # Load pre-trained BERT model and tokenizer
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-model = BertModel.from_pretrained('bert-base-multilingual-cased')
+model = BertModel.from_pretrained('usebert-base-multilingual-cased')
 
 @st.cache(allow_output_mutation=True)
 def load_model():
-    return BertTokenizer.from_pretrained('bert-base-multilingual-cased'), BertModel.from_pretrained('bert-base-multilingual-cased')
+    return BertTokenizer.from_pretrained('usebert-base-multilingual-cased'), BertModel.from_pretrained('bert-base-multilingual-cased')
 
 @st.cache(allow_output_mutation=True)
 def get_embeddings(text, tokenizer, model):
