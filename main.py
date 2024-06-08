@@ -1,9 +1,11 @@
 import streamlit as st
-from transformers import pipeline
+from transformers import pipeline, AutoModelForQuestionAnswering, AutoTokenizer
 
 @st.cache
 def load():
-    return pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
+    model = AutoModelForQuestionAnswering.from_pretrained("bert-large-uncased-whole-word-masking-finetuned-squad")
+    tokenizer = AutoTokenizer.from_pretrained("bert-large-uncased-whole-word-masking-finetuned-squad")
+    return pipeline('question-answering', model=model, tokenizer=tokenizer)
 
 bert = load()
 
