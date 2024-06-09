@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoTokenizer, AutoModel
 import torch
 
-# Example function to get embeddings from a model
+# Function to get embeddings from a model
 def get_embeddings(text, tokenizer, model):
     inputs = tokenizer(text, return_tensors='pt')
     outputs = model(**inputs)
@@ -31,25 +31,35 @@ def find_most_similar(query, data, tokenizer, model):
     
     return data.iloc[most_similar_idx]['text']
 
+# Load pre-trained tokenizer and model from Hugging Face
+@st.cache_resource
+def load_model_and_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+    model = AutoModel.from_pretrained('bert-base-uncased')
+    return tokenizer, model
+
 # Sample data
 data = pd.DataFrame({
     'text': ['sample text 1', 'sample text 2', 'sample text 3'],
     'embeddings': [np.random.rand(768), np.random.rand(768), np.random.rand(768)]
 })
 
-# Print DataFrame columns to verify the structure
-print(data.columns)
+# Streamlit application
+def main():
+    st.title("Text Similarity Search")
+    
+    query = st.text_input("Enter your query:")
+    
+    if st.button("Find Most Similar Text"):
+        if query:
+            try:
+                tokenizer, model = load_model_and_tokenizer()
+                result = find_most_similar(query, data, tokenizer, model)
+                st.write("Most similar text:", result)
+            except KeyError as e:
+                st.error(e)
+        else:
+            st.warning("Please enter a query.")
 
-# Load a pre-trained tokenizer and model from Hugging Face
-tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-model = AutoModel.from_pretrained('bert-base-uncased')
-
-# Query for similarity search
-query = "example query"
-
-# Find the most similar text
-try:
-    result = find_most_similar(query, data, tokenizer, model)
-    print("Most similar text:", result)
-except KeyError as e:
-    print(e)
+if __name__ == "__main__":
+    main()
