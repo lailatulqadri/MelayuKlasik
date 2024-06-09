@@ -1,46 +1,80 @@
 import streamlit as st
-import pandas as pd
-from bertopic import BERTopic
-from sentence_transformers import SentenceTransformer
+st.set_page_config(layout="wide")
 
-# Load and preprocess your data
-@st.cache(allow_output_mutation=True)
-def load_data(file_path):
-    data = pd.read_csv(file_path)
-    data['text'] = data['text'].str.lower().str.replace('[^\w\s]', '')
-    return data
+from transformers import BertForQuestionAnswering, AutoTokenizer,pipeline
+hide_st_style = """
+            <style>
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
-# Load the BERTopic model
-@st.cache(allow_output_mutation=True)
-def load_model():
-    model = SentenceTransformer('distiluse-base-multilingual-cased-v1')
-    topic_model = BERTopic(embedding_model=model)
-    return topic_model
+st.title("Q&A App")
+st.caption("Created using BERT model")
 
-data = load_data('Salatus_salatin.csv')
-topic_model = load_model()
+footer="""
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-# Fit the BERTopic model
-@st.cache(allow_output_mutation=True)
-def fit_model(data):
-    topics, _ = topic_model.fit_transform(data['text'].tolist())
-    return topics
+<style>
+a:link , a:visited{
+color: blue;
+background-color: transparent;
+text-decoration: underline;
+}
 
-topics = fit_model(data)
+a:hover,  a:active {
+color: red;
+background-color: transparent;
+text-decoration: underline;
+}
 
-# Streamlit interface
-st.title("Malay Text Topic Modeling with BERTopic")
+.footer {
+position: fixed;
+left: 0;
+bottom: 0;
+width: 100%;
+background-color: white;
+color: black;
+text-align: center;
+}
+</style>
+<div class="footer">
+<p>Made by Dhruven.....<a href="https://github.com/dhruven-god"><i class="fa-brands fa-github"></i>
+ <a href="https://www.linkedin.com/in/dhruven-god/"> <i class="fa-brands fa-linkedin"></i></a></p>
+ 
+</div>
+"""
+st.markdown(footer,unsafe_allow_html=True)
+@st.cache
+def load():
+    return BertForQuestionAnswering.from_pretrained("bert-large-uncased-whole-word-masking-finetuned-squad")
+model = load()
 
-st.write("This application performs topic modeling on Malay text using BERTopic.")
+@st.cache
 
-if st.checkbox("Show Raw Data"):
-    st.write(data)
+def token_load():
+    return AutoTokenizer.from_pretrained("bert-large-uncased-whole-word-masking-finetuned-squad")
 
-st.write("Topics discovered in the text:")
+token = token_load()
 
-topic_info = topic_model.get_topic_info()
-st.write(topic_info)
+bert = pipeline('question-answering',model = model, tokenizer= token)
 
-topic_id = st.number_input("Enter a topic ID to see the top words:", min_value=0, max_value=len(topic_info)-1, step=1)
-if st.button("Show Topic"):
-    st.write(topic_model.get_topic(topic_id))
+col1, col2 = st.columns(2)
+with col1:
+    with st.form("form1",clear_on_submit=False):
+        context = st.text_area("Enter your context here")
+        question = st.text_input("Enter your question here")
+
+        submit = st.form_submit_button("Submit",type="primary")
+        
+        if submit:
+            with col2:
+                st.success('Done!')
+                st.write(bert({
+                    "question":question,
+                    "context":context
+                }))
+
+
+
+
