@@ -1,7 +1,6 @@
-tensorflow
-keras
-transformers
-numpy
-PySastrawi
-nlpretext
 streamlit
+numpy
+pandas
+scikit-learn
+transformers
+torch
