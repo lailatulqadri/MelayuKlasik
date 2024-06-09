@@ -1,65 +1,32 @@
+# Import necessary libraries
 import streamlit as st
-import numpy as np
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoTokenizer, AutoModel
+import transformers
 import torch
 
-# Function to get embeddings from a model
-def get_embeddings(text, tokenizer, model):
-    inputs = tokenizer(text, return_tensors='pt')
+# Load the BERT model and tokenizer
+model = transformers.AutoModelForSequenceClassification.from_pretrained("bert-base-cased")
+tokenizer = transformers.AutoTokenizer.from_pretrained("bert-base-cased")
+
+# Define the function for sentiment analysis
+def predict_sentiment(text):
+    # Tokenize the input text
+    inputs = tokenizer(text, return_tensors="pt")
+
+    # Pass the tokenized input through the model
     outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
-# Function to find the most similar text
-def find_most_similar(query, data, tokenizer, model):
-    # Check if 'embeddings' column exists
-    if 'embeddings' not in data.columns:
-        raise KeyError("'embeddings' column not found in the DataFrame")
-    
-    query_embedding = get_embeddings(query, tokenizer, model)
-    
-    # Reshape query_embedding if necessary
-    if len(query_embedding.shape) == 1:
-        query_embedding = query_embedding.reshape(1, -1)
-    
-    # Convert list of embeddings to numpy array
-    embeddings = np.vstack(data['embeddings'].values)
-    
-    similarities = cosine_similarity(query_embedding, embeddings)
-    most_similar_idx = np.argmax(similarities)
-    
-    return data.iloc[most_similar_idx]['text']
+    # Get the predicted class and return the corresponding sentiment
+    predicted_class = torch.argmax(outputs.logits, dim=-1).item()
+    if predicted_class == 0:
+        return "Negative"
+    elif predicted_class == 1:
+        return "Neutral"
+    else:
+        return "Positive"
 
-# Load pre-trained tokenizer and model from Hugging Face
-@st.cache_resource
-def load_model_and_tokenizer():
-    tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-    model = AutoModel.from_pretrained('bert-base-uncased')
-    return tokenizer, model
-
-# Sample data
-data = pd.DataFrame({
-    'text': ['sample text 1', 'sample text 2', 'sample text 3'],
-    'embeddings': [np.random.rand(768), np.random.rand(768), np.random.rand(768)]
-})
-
-# Streamlit application
-def main():
-    st.title("Text Similarity Search")
-    
-    query = st.text_input("Enter your query:")
-    
-    if st.button("Find Most Similar Text"):
-        if query:
-            try:
-                tokenizer, model = load_model_and_tokenizer()
-                result = find_most_similar(query, data, tokenizer, model)
-                st.write("Most similar text:", result)
-            except KeyError as e:
-                st.error(e)
-        else:
-            st.warning("Please enter a query.")
-
-if __name__ == "__main__":
-    main()
+# Streamlit app
+st.title("Sentiment Analysis App")
+text = st.text_input("Enter some text here:")
+if text:
+    sentiment = predict_sentiment(text)
+    st.write(f"Sentiment: {sentiment}")
