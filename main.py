@@ -1,52 +1,55 @@
 import streamlit as st
-import pandas as pd
-from transformers import BertTokenizer, BertModel
-from sklearn.metrics.pairwise import cosine_similarity
-import torch
 import numpy as np
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import AutoTokenizer, AutoModel
+import torch
 
-# Load pre-trained BERT model and tokenizer
-tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-model = BertModel.from_pretrained('bert-base-multilingual-cased')
-
-@st.cache(allow_output_mutation=True)
-def load_model():
-    return BertTokenizer.from_pretrained('bert-base-multilingual-cased'), BertModel.from_pretrained('bert-base-multilingual-cased')
-
-@st.cache(allow_output_mutation=True)
+# Example function to get embeddings from a model
 def get_embeddings(text, tokenizer, model):
-    inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True, max_length=512)
+    inputs = tokenizer(text, return_tensors='pt')
     outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
-@st.cache(allow_output_mutation=True)
-def load_data(file_path):
-    data = pd.read_csv(file_path)
-    data['text'] = data['text'].str.lower().str.replace('[^\w\s]', '')
-    tokenizer, model = load_model()
-    data['embeddings'] = data['text'].apply(lambda x: get_embeddings(x, tokenizer, model))
-    return data
-
-data = pd.read_csv('Salatus_salatin.csv')
-
+# Function to find the most similar text
 def find_most_similar(query, data, tokenizer, model):
+    # Check if 'embeddings' column exists
+    if 'embeddings' not in data.columns:
+        raise KeyError("'embeddings' column not found in the DataFrame")
+    
     query_embedding = get_embeddings(query, tokenizer, model)
-    similarities = cosine_similarity(query_embedding, np.vstack(data['embeddings'].values))
+    
+    # Reshape query_embedding if necessary
+    if len(query_embedding.shape) == 1:
+        query_embedding = query_embedding.reshape(1, -1)
+    
+    # Convert list of embeddings to numpy array
+    embeddings = np.vstack(data['embeddings'].values)
+    
+    similarities = cosine_similarity(query_embedding, embeddings)
     most_similar_idx = np.argmax(similarities)
+    
     return data.iloc[most_similar_idx]['text']
 
-# Streamlit interface
-st.title("Malay Text Chatbot")
+# Sample data
+data = pd.DataFrame({
+    'text': ['sample text 1', 'sample text 2', 'sample text 3'],
+    'embeddings': [np.random.rand(768), np.random.rand(768), np.random.rand(768)]
+})
 
-st.write("Enter a query to get a response from the chatbot.")
+# Print DataFrame columns to verify the structure
+print(data.columns)
 
-user_query = st.text_input("Your query:", "")
+# Load a pre-trained tokenizer and model from Hugging Face
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+model = AutoModel.from_pretrained('bert-base-uncased')
 
-if user_query:
-    tokenizer, model = load_model()
-    response = find_most_similar(user_query, data, tokenizer, model)
-    st.write("Chatbot response:", response)
+# Query for similarity search
+query = "example query"
 
-# Upload your CSV file
-from google.colab import files
-uploaded = files.upload()
+# Find the most similar text
+try:
+    result = find_most_similar(query, data, tokenizer, model)
+    print("Most similar text:", result)
+except KeyError as e:
+    print(e)
