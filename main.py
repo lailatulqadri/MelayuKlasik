@@ -17,7 +17,7 @@ def load_model():
     topic_model = BERTopic(embedding_model=model)
     return topic_model
 
-data = load_data('malay_text_data.csv')
+data = load_data('Salatus_salatin.csv')
 topic_model = load_model()
 
 # Fit the BERTopic model
