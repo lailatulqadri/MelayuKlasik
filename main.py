@@ -1,3 +1,10 @@
+# Import necessary libraries
+import streamlit as st
+from bertopic import BERTopic
+from sklearn.datasets import fetch_20newsgroups
+
+# Load the BERTopic model
+topic_model = BERTopic()
 # Streamlit app
 st.title("Topic Modeling App")
 text = st.text_input("Enter some text here:")
