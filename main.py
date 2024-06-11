@@ -3,8 +3,7 @@ import streamlit as st
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 
 
-# Load the sentiment analysis pipeline
-@st.cache(allow_output_mutation=True)
+# 
 model = transformers.AutoModelForSequenceClassification.from_pretrained("bert-base-cased")
 tokenizer = transformers.AutoTokenizer.from_pretrained("bert-base-cased")
     
