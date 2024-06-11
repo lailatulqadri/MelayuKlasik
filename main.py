@@ -1,97 +1,26 @@
-import tensorflow as tf
-import numpy as np
 import streamlit as st
-import os
+from transformers import pipeline
 
-# ML stuff
-from transformers import BertTokenizer, TFBertModel
-from tensorflow import keras
-
-# preprocessing library
-from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
-from nlpretext import Preprocessor
-from nlpretext.basic.preprocess import normalize_whitespace, lower_text, remove_eol_characters, replace_currency_symbols, \
-                                        remove_punct, remove_multiple_spaces_and_strip_text, filter_non_latin_characters
-
-GOOGLE_DRIVE_FILE_ID = "YOUR GOOGLE DRIVE FILE ID HERE"
-
-# set maximum length and tokenizer
-MAX_LEN = 50
-tokenizer = BertTokenizer.from_pretrained('YOUR BERT PRETRAINED MODEL HERE')
-
-# stemmer
-stemmer_factory = StemmerFactory()
-stemmer = stemmer_factory.create_stemmer()
-
-# stopword
-stopword_factory = StopWordRemoverFactory()
-stopword = stopword_factory.create_stop_word_remover()
-
-# use nlpretext processor
-preprocessor = Preprocessor()
-preprocessor.pipe(lower_text)
-preprocessor.pipe(remove_eol_characters)
-preprocessor.pipe(normalize_whitespace)
-preprocessor.pipe(remove_multiple_spaces_and_strip_text)
-preprocessor.pipe(remove_punct)
-preprocessor.pipe(replace_currency_symbols)
-preprocessor.pipe(filter_non_latin_characters)
-
-# load model on first launch
+# Load the sentiment analysis pipeline
 @st.cache(allow_output_mutation=True)
 def load_model():
-	filepath = "model/model.h5"
+    return pipeline("sentiment-analysis")
 
-	# folder exists?
-	if not os.path.exists('model'):
-		# create folder
-		os.mkdir('model')
-	
-	# file exists?
-	if not os.path.exists(filepath):
-		# download file
-		from gd_download import download_file_from_google_drive
-		download_file_from_google_drive(id=GOOGLE_DRIVE_FILE_ID, destination=filepath)
-	
-	# load model
-	model = keras.models.load_model(filepath)
-	return model
+model = load_model()
 
-def cleanText(sentence):
-    # process with PySastrawi first
-    stemmed = stemmer.stem(sentence)
-    stopwordremoved = stopword.remove(stemmed)
+# Streamlit app
+st.title("Sentiment Analysis with BERT")
+st.write("Enter some text and the model will analyze the sentiment.")
 
-    # then with nlpretext
-    cleaned = preprocessor.run(stopwordremoved)
+# User input
+user_input = st.text_area("Enter your text here:")
 
-    # return
-    return cleaned
-
-def encodeText(sentence):
-	sentence = cleanText(sentence)
-
-	encoded_dict = tokenizer.encode_plus(
-					sentence,
-					add_special_tokens = True,
-                    max_length = MAX_LEN,
-                    truncation = True,
-                    padding = "max_length",
-                    return_attention_mask = True,
-                    return_token_type_ids = False
-	)
-
-	input_ids = [encoded_dict['input_ids']]
-	attn_mask = [encoded_dict['attention_mask']]
-  	
-	return input_ids, attn_mask
-
-def predict(model, input):
-	input_id, attn_mask = np.array(encodeText(input))
-	data = [input_id, attn_mask]
-
-	prediction = model.predict(data)
-	prediction = prediction[0].item() * 100
-
-	return prediction
+# Model inference
+if st.button("Analyze"):
+    if user_input:
+        results = model(user_input)
+        for result in results:
+            st.write(f"**Label:** {result['label']}")
+            st.write(f"**Score:** {result['score']:.4f}")
+    else:
+        st.write("Please enter some text to analyze.")
