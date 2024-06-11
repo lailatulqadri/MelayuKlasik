@@ -1,7 +1,5 @@
-tensorflow
-tf-keras
-transformers
-numpy
-PySastrawi
-nlpretext
 streamlit
+numpy
+pandas
+transformers
+torch
