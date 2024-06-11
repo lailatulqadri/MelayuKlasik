@@ -14,7 +14,7 @@ def load_model_malay():
     model_name = "mesolitica/bert-base-standard-bahasa-cased"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
-    return pipeline("text-classification", model=model, tokenizer=tokenizer)
+    return pipeline("text-classification", model=model, tokenizer=tokenizer, from_pt=True)
 
 
 model = load_model_malaya()
