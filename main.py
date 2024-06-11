@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 
 
 # 
-model = transformers.AutoModelForSequenceClassification.from_pretrained("bert-base-cased")
+model = transformers.AutoModelForSequenceClassification.from_pretrained("google-bert/bert-base-multilingual-cased")
 tokenizer = transformers.AutoTokenizer.from_pretrained("bert-base-cased")
     
 # User input
