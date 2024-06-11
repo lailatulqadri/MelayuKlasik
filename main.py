@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 
 
 # Load the sentiment analysis pipeline
-@st.cache(allow_output_mutation=True)
+#@st.cache(allow_output_mutation=True)
 def load_model():
     model = "mesolitica/bert-base-standard-bahasa-cased"
     return pipeline("sentiment-analysis", model)
