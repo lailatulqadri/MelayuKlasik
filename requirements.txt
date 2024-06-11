@@ -1,3 +1,7 @@
+tensorflow
+keras
+transformers
+numpy
+PySastrawi
+nlpretext
 streamlit
-transformers==4.41.2
-pytorch-pretrained-bert==0.6.2
