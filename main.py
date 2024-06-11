@@ -16,7 +16,7 @@ def load_model_malay():
     return pipeline("text-classification", model=model, tokenizer=tokenizer)
 
 
-model = load_model_malay()
+model = load_model()
 
 # Streamlit app
 st.title("Sentiment Analysis with BERT")
