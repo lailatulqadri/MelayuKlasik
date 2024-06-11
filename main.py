@@ -10,7 +10,7 @@ def load_model():
 
 def load_model_malay():
     #model_name = "huggingface/bert-base-bahasa-cased"
-    model_name = "mesolitica/bert-base-standard-bahasa-cased"
+    #model_name = "mesolitica/bert-base-standard-bahasa-cased"
     model_name = "MoritzLaurer/policy-distilbert-7d"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
