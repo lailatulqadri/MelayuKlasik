@@ -6,9 +6,9 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 # Load the sentiment analysis pipeline
 @st.cache_resource
 def load_model():
-    model = "mesolitica/bert-base-standard-bahasa-cased"
-    return pipeline("sentiment-analysis", model)
-
+   
+    return pipeline("sentiment-analysis")
+@st.cache_resource
 def load_model_malay():
     #model_name = "huggingface/bert-base-bahasa-cased"
     model_name = "mesolitica/bert-base-standard-bahasa-cased"
@@ -17,7 +17,7 @@ def load_model_malay():
     return pipeline("text-classification", model=model, tokenizer=tokenizer)
 
 
-model = load_model()
+model = load_model_malaya()
 
 # Streamlit app
 st.title("Sentiment Analysis with BERT")
