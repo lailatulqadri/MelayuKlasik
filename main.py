@@ -7,17 +7,8 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipe
 @st.cache(allow_output_mutation=True)
 def load_model():
     return pipeline("sentiment-analysis")
-
-def load_model_malay():
-    #model_name = "huggingface/bert-base-bahasa-cased"
-    #model_name = "mesolitica/bert-base-standard-bahasa-cased"
-    model_name = "MoritzLaurer/policy-distilbert-7d"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSequenceClassification.from_pretrained(model_name)
-    return pipeline("text-classification", model=model, tokenizer=tokenizer)
-
-
-model = load_model_malay()
+    
+model = load_model()
 
 # Streamlit app
 st.title("Sentiment Analysis with BERT")
