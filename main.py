@@ -1,7 +1,7 @@
 import streamlit as st
 from transformers import BertForSequenceClassification, BertTokenizerFast
 
-@st.experimental_memo(allow_mutation=True)
+@st.cache_resource
 def load_model():
     model = BertForSequenceClassification.from_pretrained('bert-base-uncased')
     tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
