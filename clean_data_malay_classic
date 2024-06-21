@@ -1,0 +1,68 @@
+# prompt: remove punctuation from pandas
+
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+import string
+
+stopwords_malay = [
+    "akan", "aku", "adalah", "adapun", "agak", "agar", "akan", "akibat", "aku", "alangkah", "alhasil", 
+    "alkisah", "amat", "anda", "andai", "andaikata", "apa", "apatah", "atas", "atau", "bagaimanapun", 
+    "bagai", "bagaimana", "bagaimanakah", "bagaimanapun", "bahawa", "bahkan", "banyak", "banyaknya", 
+    "barang", "barangsiapa", "bawah", "beberapa", "begitu", "begitupun", "berbagai", "berikut", 
+    "berkenaan", "bermacam", "bermula", "bersama", "beserta", "betul", "bila", "bilamana", "boleh", 
+    "bolehkah", "buat", "bukan", "bukankah", "bukanlah", "bukannya", "cuma", "dahulu", "dalam", "dan", 
+    "dapat", "dari", "daripada", "demi", "demikian", "dengan", "depan", "di", "dia", "dialah", "diantara", 
+    "diantara", "diarangkan", "diawali", "dicatatkan", "diceritakan", "dikatakan", "diketahui", 
+    "dimaksud", "dimaksudkan", "dimana", "diri", "dirinya", "disana", "disinilah", "disitulah", "disebut", 
+    "disebutkan", "disampaikan", "disertakan", "disitulah", "ditambah", "ditambahkan", "ditandaskan", 
+    "ditanyakan", "dituturkan", "diumumkan", "dong", "engkau", "engkaulah", "guna", "hadap", "hai", "hal", 
+    "hamba", "hanya", "hendak", "hendaklah", "hingga", "ia", "iaitu", "ialah", "ibarat", "ikut", 
+    "ingin", "inilah", "inipun", "itu", "itulah", "jadi", "jangan", "jauh", "jelas", "jikalau", "jika", 
+    "jua", "juga", "junjung", "ka", "kami", "kamu", "kamu", "kan", "kapan", "kapankah", "karena", 
+    "kasihan", "kelak", "kelihatan", "kembali", "kemudian", "kepada", "kepadanya", "keseluruh", "ketika", 
+    "khabarnya", "khusus", "khususnya", "kini", "kiranya", "kita", "kut", "lalu", "lama", "lamanya", 
+    "lanjut", "lagi", "lah", "lain", "laksana", "lalu", "lanjut", "lagi", "lah", "lagi", "lalu", "lanjut", 
+    "lewat", "lihat", "lima", "luar", "macam", "maka", "makanya", "makin", "malah", "malahan", "mana", 
+    "manakala", "manalagi", "masa", "masalah", "masalahnya", "masih", "masihkah", "masing", "masing-masing", 
+    "melainkan", "melihat", "melihatnya", "memang", "mempersoalkan", "mempunyai", "menambahkan", 
+    "menandaskan", "menanyakan", "mendapat", "mendapatkan", "menerangkan", "menerima", "menjelaskan", 
+    "menunjuk", "menunjukkan", "menurut", "menuturkan", "menyampaikan", "menyangkut", "menyatakan", 
+    "menyebutkan", "menyikapi", "merasa", "mereka", "meski", "meskipun", "mesti", "muncul", "mungkin", 
+    "nah", "naik", "namun", "nanti", "nantinya", "nyaris", "nyatanya", "oleh", "orang", "pada", "padahal", 
+    "padanya", "pak", "paling", "panjang", "pantas", "para", "pasti", "pula", "pun", "saat", "saatnya", 
+    "saja", "sajalah", "saling", "sama", "sama-sama", "sambil", "sampai", "sana", "sangat", "sangatlah", 
+    "sangkut", "satu", "saya", "se", "sebab", "sebagai", "sebagaimana", "sebagian", "sebaliknya", "sebanyak", 
+    "sebegini", "sebegitu", "sebelum", "sebelumnya", "sebenarnya", "seberapa", "sebesar", "sebetulnya", 
+    "sebisanya", "sebuah", "sebut", "secara", "secukupnya", "sedang", "sedangkan", "sedikit", "sedikitnya", 
+    "seenaknya", "segera", "seharusnya", "sehingga", "seingat", "sejak", "sejauh", "sejenak", "sejumlah", 
+    "sekali", "sekalian", "sekaligus", "sekalipun", "sekarang", "sekarang", "sekecil", "seketika", 
+    "sekiranya", "sekitar", "sekitarnya", "sekurangnya", "sela", "selain", "selaku", "selalu", "selama", 
+    "selama-lamanya", "selamanya", "selanjutnya", "seluruh", "seluruhnya", "semacam", "semakin", 
+    "semampunya", "semasa", "semasih", "semata", "sembari", "sementara", "semisal", "semisalnya", "sempat", 
+    "semua", "semuanya", "semula", "sendiri", "sendirian", "sendirinya", "seolah", "sepanjang", "sepantasnya", 
+    "seperlunya", "seperti", "sepertinya", "sepihak", "sering", "seringnya", "serta", "serupa", "sesaat", 
+    "sesama", "sesampai", "sesegera", "sesekali", "seseorang", "sesuatu", "sesuatunya", "sesudah", 
+    "sesudahnya", "setelah", "setempat", "setengah", "seterusnya", "setiap", "setiba", "setidaknya", 
+    "setinggi", "seusai", "sewaktu", "siap", "siapa", "siapakah", "siapapun", "sini", "sinilah", "soal", 
+    "suatu", "sudah", "sudahkah", "sudahlah", "supaya", "tadi", "tadinya", "tahap", "tak", "tambah", 
+    "tambahnya", "tampak", "tandas", "tandasnya", "tanpa", "tanya", "tanyakan", "tanyanya", "tapi", 
+    "tegas", "tegasnya", "telah", "tempat", "tentang", "tentu", "tentulah", "tentunya", "terakhir", 
+    "terasa", "terbanyak", "terdahulu", "terdapat", "terdiri", "terhadap", "terhadapnya", "teringat", 
+    "terjadi", "terjadilah", "terjadinya", "terkira", "terlalu", "terlebih", "terlihat", "termasuk", 
+    "ternyata", "tersampaikan", "tersebut", "tersebutlah", "tertentu", "tertuju", "terus", "terutama", 
+    "tetap", "tetapi", "tiada", "tidak", "tidakkah", "tidaklah", "tiga", "toh", "tuju", "tunjuk", 
+    "turut", "tutur", "ucap", "ucapnya", "ujar", "ujarnya", "umum", "ungkap", "ungkapnya", "untuk", 
+    "usah", "usai", "waduh", "wah", "wahai", "waktu", "waktunya", "walau", "walaupun", "wong", "ya", 
+    "yaitu", "yakin", "yakni", "yang"
+]
+nltk.download('stopwords')
+stop = stopwords.words('english')
+df = pd.read_csv("klasik.csv")
+#convert to list
+df['text'] = df.text.str.replace("[^\w\s]", "").str.lower()
+df['text'] = df['text'].apply(lambda x: ' '.join([item for item in x.split() if item not in stopwords_malay]))
+df['text'] = df['text'].str.replace('['+string.punctuation+']', '', regex=True)
+
+
+df.to_csv('klasik_cleaned.csv')
